@@ -270,6 +270,9 @@ export default {
         })
     },
     showDetail ({ nativeEvent, event }) {
+      if (this.editMode) {
+        return
+      }
       this.selectedEvent = event
       nativeEvent.stopPropagation()
     }
