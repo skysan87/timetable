@@ -1,11 +1,14 @@
 <template>
   <v-row>
     <v-col cols="9">
-      <v-sheet height="32">
+      <v-sheet>
         <v-toolbar flat color="white">
           <!-- TODO:Set WorkTime -->
           <v-switch v-model="editMode" label="Add/Edit Event" />
           <v-spacer />
+          <v-btn color="primary" @click="scrollToTime">
+            Now
+          </v-btn>
         </v-toolbar>
       </v-sheet>
       <v-sheet height="85vh">
@@ -69,8 +72,7 @@ export default {
     selectedEvent: null,
     colors: ['#2196F3', '#3F51B5', '#673AB7', '#00BCD4', '#4CAF50', '#FF9800', '#757575'],
     ready: false,
-    // 08:30 〜 19:30
-    intervals: { first: 17, minutes: 30, count: 20, height: 48 }
+    intervals: { first: 0, minutes: 30, count: 48, height: 48 }
   }),
   computed: {
     cal () {
@@ -268,6 +270,9 @@ export default {
         })
     },
     showDetail ({ nativeEvent, event }) {
+      if (this.editMode) {
+        return
+      }
       this.selectedEvent = event
       nativeEvent.stopPropagation()
     }
