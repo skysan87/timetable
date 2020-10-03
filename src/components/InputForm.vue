@@ -15,6 +15,10 @@
           v-model="dummyEvent.name"
           label="Name"
         />
+        <v-checkbox
+          v-model="isFrequent"
+          label="Frequent"
+        />
         <v-btn
           class="mr-4 my-1"
           @click="clear"
@@ -58,6 +62,14 @@ export default {
   computed: {
     isNotBlank () {
       return !!this.event
+    },
+    isFrequent: {
+      get () {
+        return this.dummyEvent.type === Task.TYPE_FREQUENT
+      },
+      set (value) {
+        this.dummyEvent.type = value ? Task.TYPE_FREQUENT : Task.TYPE_EVENT
+      }
     }
   },
   watch: {
