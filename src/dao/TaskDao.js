@@ -27,6 +27,31 @@ export class TaskDao {
     })
   }
 
+  getFreqEvents () {
+    return new Promise((resolve, reject) => {
+      const db = DB.getInstance()
+      try {
+        const tx = db.transaction('event', 'readonly')
+        const store = tx.objectStore('event')
+        const index = store.index('event_type')
+        const key = IDBKeyRange.only([Task.TYPE_FREQUENT])
+        const req = index.openCursor(key)
+        const events = []
+        req.onsuccess = (e) => {
+          if (req.result === null) {
+            resolve(events)
+          } else {
+            const cursor = req.result
+            events.push(new Task(cursor.value.id, cursor.value))
+            cursor.continue()
+          }
+        }
+      } catch (error) {
+        reject(error)
+      }
+    })
+  }
+
   add (task) {
     return new Promise((resolve, reject) => {
       const db = DB.getInstance()

@@ -17,7 +17,7 @@ class DB {
 
   connect () {
     return new Promise((resolve, reject) => {
-      const req = window.indexedDB.open(this._dbName, 1)
+      const req = window.indexedDB.open(this._dbName, 2)
 
       req.onsuccess = (event) => {
         this._db = event.target.result

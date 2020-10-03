@@ -232,9 +232,9 @@ export default {
     },
     getEventColor (event) {
       if (this.selectedEvent && this.selectedEvent.id === event.id) {
-        return '#3F51B5'
+        return this.color2rgb(event.color, 0.7)
       } else {
-        return '#2196F3'
+        return this.color2rgb(event.color)
       }
     },
     /**
@@ -243,7 +243,11 @@ export default {
     getEvents ({ start, end }) {
       dao.init(this.getDate())
         .then((events) => {
-          this.events = events
+          this.events.push(...events)
+        })
+      dao.getFreqEvents()
+        .then((events) => {
+          this.events.push(...events)
         })
     },
     getDate () {
@@ -275,6 +279,13 @@ export default {
       }
       this.selectedEvent = event
       nativeEvent.stopPropagation()
+    },
+    color2rgb (colorCode, opacity = 1.0) {
+      const rgb = parseInt(colorCode.substring(1), 16)
+      const r = (rgb >> 16) & 0xFF
+      const g = (rgb >> 8) & 0xFF
+      const b = (rgb >> 0) & 0xFF
+      return `rgba(${r}, ${g}, ${b}, ${opacity})`
     }
   }
 }
