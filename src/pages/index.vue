@@ -1,6 +1,6 @@
 <template>
   <v-row>
-    <v-col cols="9">
+    <v-col>
       <v-sheet>
         <v-toolbar flat color="white">
           <!-- TODO:Set WorkTime -->
@@ -43,9 +43,7 @@
         </v-calendar>
       </v-sheet>
     </v-col>
-    <v-col cols="3">
-      <input-form :event="selectedEvent" @clear="selectedEvent = null" @update="updateEvent" @delete="deleteEvent" />
-    </v-col>
+    <input-form ref="detail" @clear="closeDetail" @update="updateEvent" @delete="deleteEvent" />
   </v-row>
 </template>
 
@@ -69,7 +67,6 @@ export default {
     createEvent: null,
     createStart: null,
     extendOriginal: null,
-    selectedEvent: null,
     colors: ['#2196F3', '#3F51B5', '#673AB7', '#00BCD4', '#4CAF50', '#FF9800', '#757575'],
     ready: false,
     intervals: { first: 0, minutes: 30, count: 48, height: 48 }
@@ -231,11 +228,7 @@ export default {
       ).getTime()
     },
     getEventColor (event) {
-      if (this.selectedEvent && this.selectedEvent.id === event.id) {
-        return '#3F51B5'
-      } else {
-        return '#2196F3'
-      }
+      return this.color2rgb(event.color)
     },
     /**
      * v-calender@change Event
@@ -243,7 +236,11 @@ export default {
     getEvents ({ start, end }) {
       dao.init(this.getDate())
         .then((events) => {
-          this.events = events
+          this.events.push(...events)
+        })
+      dao.getFreqEvents()
+        .then((events) => {
+          this.events.push(...events)
         })
     },
     getDate () {
@@ -258,6 +255,7 @@ export default {
             Object.assign(this.events[index], event)
           }
         })
+      this.closeDetail()
     },
     deleteEvent (id) {
       dao.delete(id)
@@ -265,16 +263,32 @@ export default {
           const index = this.events.findIndex(v => v.id === id)
           if (index >= 0) {
             this.events.splice(index, 1)
-            this.selectedEvent = null
           }
         })
+      this.closeDetail()
     },
     showDetail ({ nativeEvent, event }) {
       if (this.editMode) {
         return
       }
-      this.selectedEvent = event
+
+      const openDialog = () => {
+        this.$refs.detail.open(event)
+        setTimeout(() => {
+        }, 100)
+      }
+      openDialog()
+
       nativeEvent.stopPropagation()
+    },
+    closeDetail () {
+    },
+    color2rgb (colorCode, opacity = 1.0) {
+      const rgb = parseInt(colorCode.substring(1), 16)
+      const r = (rgb >> 16) & 0xFF
+      const g = (rgb >> 8) & 0xFF
+      const b = (rgb >> 0) & 0xFF
+      return `rgba(${r}, ${g}, ${b}, ${opacity})`
     }
   }
 }

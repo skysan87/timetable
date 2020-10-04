@@ -1,9 +1,10 @@
 const event = {
   name: 'event',
-  version: 1,
+  version: 2,
   indexes: [
     // 今日の予定の検索インデックス
-    { name: 'todays_event', key: ['type', 'event_date'], option: { unique: false, multiEntry: false } }
+    { name: 'todays_event', key: ['type', 'event_date'], option: { unique: false, multiEntry: false } },
+    { name: 'event_type', key: ['type'], option: { unique: false, multiEntry: false } }
   ]
 }
 
