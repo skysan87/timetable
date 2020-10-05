@@ -126,7 +126,7 @@ export default {
         task.name = ''
         task.start = this.createStart
         task.end = this.createStart + (30 * 60 * 1000)
-        task.event_date = this.getDate()
+        task.event_date = this.getDate(this.createStart)
         task.timed = true
         this.createEvent = task
 
@@ -243,9 +243,10 @@ export default {
           this.events.push(...events)
         })
     },
-    getDate () {
+    getDate (time) {
       // YYYY-MM-DD
-      return new Date().toISOString().slice(0, 10)
+      const date = time ? new Date(time) : new Date()
+      return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`
     },
     updateEvent (event) {
       dao.update(event)
