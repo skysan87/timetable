@@ -10,6 +10,10 @@ export class Task {
     this.start = params.start || 0
     this.end = params.end || 0
     this.timed = params.timed || false
+    if (this.type === Task.TYPE_FREQUENT) {
+      this.start = this.convertToToday(this.start)
+      this.end = this.convertToToday(this.end)
+    }
   }
 
   getData () {
@@ -26,5 +30,16 @@ export class Task {
 
   get color () {
     return this.type === Task.TYPE_EVENT ? '#2196F3' : '#006400'
+  }
+
+  convertToToday (offset) {
+    const date = new Date(offset)
+    const today = new Date()
+    today.setHours(date.getHours()
+      , date.getMinutes()
+      , 0
+      , 0
+    )
+    return today.getTime()
   }
 }
