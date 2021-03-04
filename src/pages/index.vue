@@ -249,6 +249,9 @@ export default {
           if (index >= 0) {
             Object.assign(this.events[index], event)
           }
+          if (!this.visiblePrivate && event.private) {
+            this.events.splice(index, 1)
+          }
         })
       this.closeDetail()
     },
@@ -286,19 +289,23 @@ export default {
       return `rgba(${r}, ${g}, ${b}, ${opacity})`
     },
     initVisibleEvents () {
+      this.events = []
       dao.init(this.getDate())
         .then((events) => {
           this.events.push(...events)
         })
-      dao.getFreqEvents()
+        .then(dao.getFreqEvents)
         .then((events) => {
           this.events.push(...events)
+        })
+        .then(() => {
+          if (!this.visiblePrivate) {
+            this.events = this.events.filter(e => e.private === this.visiblePrivate)
+          }
         })
     },
     switchPrivate () {
       if (!this.visiblePrivate) {
-        // const publicEvents = this.events.filter(e => e.private === false)
-        // console.log(publicEvents)
         this.events = this.events.filter(e => e.private === false)
       } else {
         this.events = []
