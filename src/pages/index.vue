@@ -3,10 +3,45 @@
     <v-col>
       <v-sheet>
         <v-toolbar flat color="white">
-          <!-- TODO:Set WorkTime -->
-          <v-switch v-model="editMode" label="Add/Move Event" />
-          <v-switch v-model="visiblePrivate" class="px-6" label="Show Private" @change="switchPrivate" />
+          <v-btn
+            outlined
+            class="mr-4"
+            color="grey darken-2"
+            @click="setToday"
+          >
+            Today
+          </v-btn>
+          <v-btn
+            fab
+            text
+            small
+            color="grey darken-2"
+            @click="prev"
+          >
+            <v-icon small>
+              mdi-chevron-left
+            </v-icon>
+          </v-btn>
+          <v-btn
+            fab
+            text
+            small
+            color="grey darken-2"
+            @click="next"
+          >
+            <v-icon small>
+              mdi-chevron-right
+            </v-icon>
+          </v-btn>
+          <v-toolbar-title v-if="$refs.calendar">
+            {{ $refs.calendar.title }}
+          </v-toolbar-title>
+
           <v-spacer />
+
+          <v-switch v-model="editMode" label="Add/Move Event" class="pr-4" hide-details />
+          <v-switch v-model="visiblePrivate" class="pr-4" label="Show Private" hide-details @change="switchPrivate" />
+
           <v-btn color="primary" @click="scrollToTime">
             Now
           </v-btn>
@@ -15,7 +50,7 @@
       <v-sheet height="85vh">
         <v-calendar
           ref="calendar"
-          v-model="value"
+          v-model="focus"
           type="day"
           :first-interval="intervals.first"
           :interval-minutes="intervals.minutes"
@@ -51,6 +86,7 @@
 <script>
 import { Task } from '@/model/Task'
 import { TaskDao } from '@/dao/TaskDao'
+import { toDateString } from '@/util/TimeUtil'
 import InputForm from '@/components/InputForm'
 
 const dao = new TaskDao()
@@ -61,7 +97,7 @@ export default {
   },
   data: () => ({
     events: [],
-    value: '',
+    focus: '',
     editMode: false,
     dragEvent: null,
     dragStart: null,
@@ -240,7 +276,7 @@ export default {
     getDate (time) {
       // YYYY-MM-DD
       const date = time ? new Date(time) : new Date()
-      return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`
+      return toDateString(date)
     },
     updateEvent (event) {
       dao.update(event)
@@ -280,6 +316,7 @@ export default {
       nativeEvent.stopPropagation()
     },
     closeDetail () {
+      // close dialog
     },
     color2rgb (colorCode, opacity = 1.0) {
       const rgb = parseInt(colorCode.substring(1), 16)
@@ -290,13 +327,25 @@ export default {
     },
     initVisibleEvents () {
       this.events = []
-      dao.init(this.getDate())
+      const dateString = this.focus === '' ? this.getDate() : this.focus
+
+      dao.init(dateString)
         .then((events) => {
           this.events.push(...events)
         })
         .then(dao.getFreqEvents)
         .then((events) => {
-          this.events.push(...events)
+          const updatedEvents = events.map((e) => {
+            e.start = e.changeDate(dateString, e.start)
+            e.end = e.changeDate(dateString, e.end)
+            return e
+          })
+          this.events.push(...updatedEvents)
+        })
+        .then(() => {
+          if (!this.visiblePrivate) {
+            this.events = this.events.filter(e => e.private === this.visiblePrivate)
+          }
         })
         .then(() => {
           if (!this.visiblePrivate) {
@@ -311,6 +360,15 @@ export default {
         this.events = []
         this.initVisibleEvents()
       }
+    },
+    setToday () {
+      this.focus = ''
+    },
+    prev () {
+      this.$refs.calendar.prev()
+    },
+    next () {
+      this.$refs.calendar.next()
     }
   }
 }
