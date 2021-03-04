@@ -4,7 +4,8 @@
       <v-sheet>
         <v-toolbar flat color="white">
           <!-- TODO:Set WorkTime -->
-          <v-switch v-model="editMode" label="Add/Edit Event" />
+          <v-switch v-model="editMode" label="Add/Move Event" />
+          <v-switch v-model="visiblePrivate" class="px-6" label="Show Private" @change="switchPrivate" />
           <v-spacer />
           <v-btn color="primary" @click="scrollToTime">
             Now
@@ -67,9 +68,9 @@ export default {
     createEvent: null,
     createStart: null,
     extendOriginal: null,
-    colors: ['#2196F3', '#3F51B5', '#673AB7', '#00BCD4', '#4CAF50', '#FF9800', '#757575'],
     ready: false,
-    intervals: { first: 0, minutes: 30, count: 48, height: 48 }
+    intervals: { first: 0, minutes: 30, count: 48, height: 48 },
+    visiblePrivate: false
   }),
   computed: {
     cal () {
@@ -234,14 +235,7 @@ export default {
      * v-calender@change Event
      */
     getEvents ({ start, end }) {
-      dao.init(this.getDate())
-        .then((events) => {
-          this.events.push(...events)
-        })
-      dao.getFreqEvents()
-        .then((events) => {
-          this.events.push(...events)
-        })
+      this.initVisibleEvents()
     },
     getDate (time) {
       // YYYY-MM-DD
@@ -290,6 +284,26 @@ export default {
       const g = (rgb >> 8) & 0xFF
       const b = (rgb >> 0) & 0xFF
       return `rgba(${r}, ${g}, ${b}, ${opacity})`
+    },
+    initVisibleEvents () {
+      dao.init(this.getDate())
+        .then((events) => {
+          this.events.push(...events)
+        })
+      dao.getFreqEvents()
+        .then((events) => {
+          this.events.push(...events)
+        })
+    },
+    switchPrivate () {
+      if (!this.visiblePrivate) {
+        // const publicEvents = this.events.filter(e => e.private === false)
+        // console.log(publicEvents)
+        this.events = this.events.filter(e => e.private === false)
+      } else {
+        this.events = []
+        this.initVisibleEvents()
+      }
     }
   }
 }
