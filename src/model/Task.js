@@ -9,11 +9,12 @@ export class Task {
     this.event_date = params.event_date || null
     this.start = params.start || 0
     this.end = params.end || 0
-    this.timed = params.timed || false
+    this.timed = params.timed || false // true:終日予定
     if (this.type === Task.TYPE_FREQUENT) {
       this.start = this.convertToToday(this.start)
       this.end = this.convertToToday(this.end)
     }
+    this.private = params.private || false
   }
 
   getData () {
@@ -24,7 +25,8 @@ export class Task {
       event_date: this.event_date,
       start: this.start,
       end: this.end,
-      timed: this.timed
+      timed: this.timed,
+      private: this.private
     }
   }
 

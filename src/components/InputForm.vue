@@ -17,10 +17,20 @@
             v-model="dummyEvent.name"
             label="Name"
           />
-          <v-checkbox
-            v-model="isFrequent"
-            label="Frequent"
-          />
+          <v-row>
+            <v-col cols="6">
+              <v-checkbox
+                v-model="isFrequent"
+                label="Frequent"
+              />
+            </v-col>
+            <v-col cols="6">
+              <v-checkbox
+                v-model="dummyEvent.private"
+                label="Private"
+              />
+            </v-col>
+          </v-row>
           <!-- TODO: コンポーネント化 -->
           <v-row>
             <!-- Start Time -->
