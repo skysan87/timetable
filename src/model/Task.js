@@ -44,4 +44,21 @@ export class Task {
     )
     return today.getTime()
   }
+
+  /**
+   *
+   * @param {String} targetDate YYYY-MM-DD
+   * @param {Number} hoursOffset UTC offset
+   * @return UTC offset
+   */
+  changeDate (targetDate, hoursOffset) {
+    const target = new Date(targetDate)
+    const hours = new Date(hoursOffset)
+    target.setHours(hours.getHours()
+      , hours.getMinutes()
+      , 0
+      , 0
+    )
+    return target.getTime()
+  }
 }
