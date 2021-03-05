@@ -21,6 +21,9 @@ export default {
     ],
     link: [{ rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }]
   },
+  icon: {
+    source: 'src/static/icon.png'
+  },
   /*
    ** Global CSS
    */
