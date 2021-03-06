@@ -182,8 +182,8 @@ export default {
     },
     update (event) {
       event.preventDefault()
-      this.dummyEvent.start = converToDate(this.dummyEvent.start, this.startTime)
-      this.dummyEvent.end = converToDate(this.dummyEvent.end, this.endTime)
+      this.dummyEvent.start = converToDate(this.dummyEvent.start, this.startTime).getTime()
+      this.dummyEvent.end = converToDate(this.dummyEvent.end, this.endTime).getTime()
       this.$emit('update', this.dummyEvent)
       this.isShown = false
       this.dummyEvent = new Task('', {})

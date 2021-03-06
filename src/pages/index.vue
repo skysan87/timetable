@@ -79,6 +79,18 @@
         </v-calendar>
       </v-sheet>
     </v-col>
+    <v-btn
+      color="primary"
+      fixed
+      large
+      bottom
+      right
+      fab
+      elevation="4"
+      @click="showDialog"
+    >
+      <v-icon>mdi-plus</v-icon>
+    </v-btn>
     <input-form ref="detail" @clear="closeDetail" @update="updateEvent" @delete="deleteEvent" />
   </v-row>
 </template>
@@ -90,6 +102,7 @@ import { toDateString } from '@/util/TimeUtil'
 import InputForm from '@/components/InputForm'
 
 const dao = new TaskDao()
+const defaultPeriod = (30 * 60 * 1000) // 30 minutes
 
 export default {
   components: {
@@ -97,7 +110,7 @@ export default {
   },
   data: () => ({
     events: [],
-    focus: '',
+    focus: '', // YYYY-MM-DD
     editMode: false,
     dragEvent: null,
     dragStart: null,
@@ -162,7 +175,7 @@ export default {
         const task = new Task(Date.now(), {})
         task.name = ''
         task.start = this.createStart
-        task.end = this.createStart + (30 * 60 * 1000)
+        task.end = this.createStart + defaultPeriod
         task.event_date = this.getDate(this.createStart)
         task.timed = true
         this.createEvent = task
@@ -279,16 +292,31 @@ export default {
       return toDateString(date)
     },
     updateEvent (event) {
-      dao.update(event)
-        .then(() => {
-          const index = this.events.findIndex(v => v.id === event.id)
-          if (index >= 0) {
-            Object.assign(this.events[index], event)
-          }
-          if (!this.visiblePrivate && event.private) {
-            this.events.splice(index, 1)
-          }
-        })
+      console.log(event)
+      if (event.id === '') {
+        // create
+        event.id = Date.now()
+        dao.add(event)
+          .then(() => {
+            if (!this.visiblePrivate && event.private) {
+              // do nothing
+            } else {
+              this.events.push(event)
+            }
+          })
+      } else {
+        // update
+        dao.update(event)
+          .then(() => {
+            const index = this.events.findIndex(v => v.id === event.id)
+            if (index >= 0) {
+              Object.assign(this.events[index], event)
+            }
+            if (!this.visiblePrivate && event.private) {
+              this.events.splice(index, 1)
+            }
+          })
+      }
       this.closeDetail()
     },
     deleteEvent (id) {
@@ -369,6 +397,17 @@ export default {
     },
     next () {
       this.$refs.calendar.next()
+    },
+    showDialog () {
+      const defaultTime = this.roundTime(new Date().getTime()) + defaultPeriod
+
+      const event = new Task('', {
+        event_date: this.focus === '' ? this.getDate() : this.focus,
+        start: defaultTime,
+        end: defaultTime + defaultPeriod,
+        timed: true
+      })
+      this.$refs.detail.open(event)
     }
   }
 }
