@@ -292,7 +292,6 @@ export default {
       return toDateString(date)
     },
     updateEvent (event) {
-      console.log(event)
       if (event.id === '') {
         // create
         event.id = Date.now()
@@ -399,10 +398,16 @@ export default {
       this.$refs.calendar.next()
     },
     showDialog () {
-      const defaultTime = this.roundTime(new Date().getTime()) + defaultPeriod
+      const eventDateString = this.focus === '' ? this.getDate() : this.focus
+
+      const time = new Date()
+      const eventDate = new Date(eventDateString)
+      eventDate.setHours(time.getHours(), time.getMinutes())
+
+      const defaultTime = this.roundTime(eventDate.getTime()) + defaultPeriod
 
       const event = new Task('', {
-        event_date: this.focus === '' ? this.getDate() : this.focus,
+        event_date: eventDateString,
         start: defaultTime,
         end: defaultTime + defaultPeriod,
         timed: true
