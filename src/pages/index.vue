@@ -1,7 +1,7 @@
 <template>
-  <v-row>
+  <v-row no-gutters>
     <v-col>
-      <v-sheet>
+      <v-sheet height="64">
         <v-toolbar flat color="white">
           <v-btn
             outlined
@@ -47,7 +47,7 @@
           </v-btn>
         </v-toolbar>
       </v-sheet>
-      <v-sheet height="85vh">
+      <v-sheet class="main-hight">
         <v-calendar
           ref="calendar"
           v-model="focus"
@@ -375,6 +375,10 @@ export default {
 </script>
 
 <style lang="scss">
+.main-hight {
+  height: calc(100vh - 64px);
+  padding-bottom: 6px;
+}
 .v-current-time {
   height: 2px;
   background-color: #ea4335;
