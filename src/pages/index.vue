@@ -39,6 +39,19 @@
 
           <v-spacer />
 
+          <v-btn
+            fab
+            text
+            small
+            color="grey darken-2"
+            class="px-4"
+            @click="$router.push('table')"
+          >
+            <v-icon>
+              mdi-table-clock
+            </v-icon>
+          </v-btn>
+
           <v-switch v-model="editMode" label="Add/Move Event" class="pr-4" hide-details />
           <v-switch v-model="visiblePrivate" class="pr-4" label="Show Private" hide-details @change="switchPrivate" />
 
