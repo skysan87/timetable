@@ -1,119 +1,118 @@
 <template>
   <v-row no-gutters>
     <v-col>
-      <v-data-table
-        :headers="headers"
-        :items="tasks"
-        :sort-by="['start', 'end']"
-        hide-default-footer
-        fixed-header
-        disable-pagination
-      >
-        <template #top>
-          <v-toolbar
-            flat
+      <v-sheet height="64">
+        <v-toolbar flat color="blue lighten-3">
+          <v-btn
+            fab
+            text
+            small
+            color="grey darken-2"
+            @click="$router.push('/')"
           >
-            <v-toolbar-title>
+            <v-icon>
+              mdi-chevron-left
+            </v-icon>
+          </v-btn>
+
+          <v-divider
+            class="mx-2"
+            inset
+            vertical
+          />
+
+          <v-row no-gutters>
+            <v-col cols="7">
+              <v-text-field
+                v-model="taskName"
+                class="ml-1"
+                solo
+                label="Add Task..."
+                hide-details
+                @keydown.enter="addTask($event.keyCode === 13)"
+              />
+            </v-col>
+            <v-col cols="3">
+              <v-select
+                v-model="taskDuration"
+                class="ml-2"
+                :items="taskDurationList"
+                label="Duration"
+                solo
+                hide-details
+              />
+            </v-col>
+            <v-col cols="1">
               <v-btn
-                fab
-                text
-                small
-                color="grey darken-2"
-                @click="$router.push('/')"
+                class="ml-2"
+                color="primary"
+                large
+                hide-details
+                @click="addTask(true)"
               >
-                <v-icon small>
-                  mdi-chevron-left
-                </v-icon>
+                Add
               </v-btn>
-            </v-toolbar-title>
-            <v-divider
-              class="mx-4"
-              inset
-              vertical
-            />
-            <v-row no-gutters>
-              <v-col cols="9">
-                <v-text-field
-                  v-model="taskName"
-                  class="ml-1"
-                  solo
-                  label="Add Task..."
-                  hide-details
-                  @keydown.enter="addTask"
-                />
-              </v-col>
-              <v-col cols="2">
-                <v-select
-                  v-model="taskDuration"
-                  class="ml-2"
-                  :items="taskDurationList"
-                  label="Duration"
-                  solo
-                  hide-details
-                />
-              </v-col>
-              <v-col cols="1">
-                <v-btn
-                  class="ml-2"
-                  color="primary"
-                  large
-                  hide-details
-                  @click="addTask"
-                >
-                  Add
-                </v-btn>
-              </v-col>
-            </v-row>
-          </v-toolbar>
-        </template>
-        <!-- eslint-disable-next-line vue/valid-v-slot -->
-        <template #item.start_time="{ item }">
-          <span>
-            {{ item.start | timeFormat }}
-          </span>
-        </template>
-        <!-- eslint-disable-next-line vue/valid-v-slot -->
-        <template #item.end_time="{ item }">
-          <span>
-            {{ item.end | timeFormat }}
-          </span>
-        </template>
-        <!-- eslint-disable-next-line vue/valid-v-slot -->
-        <template #item.actions="{ item }">
-          <v-icon
-            small
-            class="mr-2"
-            :disabled="firstIndex(item)"
-            @click="changeOrder(item, -1)"
-          >
-            mdi-arrow-up-thick
-          </v-icon>
-          <v-icon
-            small
-            class="mr-2"
-            :disabled="lastIndex(item)"
-            @click="changeOrder(item, 1)"
-          >
-            mdi-arrow-down-thick
-          </v-icon>
-          <v-icon
-            small
-            class="mr-2"
-            @click="editTask(item)"
-          >
-            mdi-pencil
-          </v-icon>
-          <v-icon
-            small
-            @click="deleteTask(item.id)"
-          >
-            mdi-delete
-          </v-icon>
-        </template>
-        <template #no-data>
-          No Task
-        </template>
-      </v-data-table>
+            </v-col>
+          </v-row>
+        </v-toolbar>
+      </v-sheet>
+      <v-sheet class="main-height">
+        <v-data-table
+          :headers="headers"
+          :items="orderedTasks"
+          hide-default-footer
+          disable-pagination
+          disable-sort
+        >
+          <!-- eslint-disable-next-line vue/valid-v-slot -->
+          <template #item.start_time="{ item }">
+            <span>
+              {{ item.start | timeFormat }}
+            </span>
+          </template>
+          <!-- eslint-disable-next-line vue/valid-v-slot -->
+          <template #item.end_time="{ item }">
+            <span>
+              {{ item.end | timeFormat }}
+            </span>
+          </template>
+          <!-- eslint-disable-next-line vue/valid-v-slot -->
+          <template #item.actions="{ item }">
+            <v-icon
+              small
+              class="mr-2"
+              :disabled="firstIndex(item)"
+              @click="changeOrder(item, -1)"
+            >
+              mdi-arrow-up-thick
+            </v-icon>
+            <v-icon
+              small
+              class="mr-2"
+              :disabled="lastIndex(item)"
+              @click="changeOrder(item, 1)"
+            >
+              mdi-arrow-down-thick
+            </v-icon>
+            <v-icon
+              small
+              class="mr-2"
+              @click="editTask(item)"
+            >
+              mdi-pencil
+            </v-icon>
+            <v-icon
+              small
+              @click="deleteTask(item.id)"
+            >
+              mdi-delete
+            </v-icon>
+          </template>
+          <template #no-data>
+            No Task
+          </template>
+        </v-data-table>
+      </v-sheet>
     </v-col>
     <input-form ref="detail" @update="updateTask" @delete="deleteTask" />
   </v-row>
@@ -122,8 +121,6 @@
 <script>
 // TODO:
 // - Actionsに下に追加ボタン
-// - スクロール時にヘッダー固定
-// - スクロール調整
 
 import { Task } from '@/model/Task'
 import { TaskDao } from '@/dao/TaskDao'
@@ -150,10 +147,10 @@ export default {
 
   data: () => ({
     headers: [
-      { text: 'title', value: 'name', sortable: false },
-      { text: 'Start', value: 'start_time', sortable: false },
-      { text: 'End', value: 'end_time', sortable: false },
-      { text: 'Actions', value: 'actions', sortable: false }
+      { text: 'Title', value: 'name', sortable: false, divider: true, align: 'start' },
+      { text: 'Start', value: 'start_time', sortable: false, divider: true, width: 100, align: 'center' },
+      { text: 'End', value: 'end_time', sortable: false, divider: true, width: 100, align: 'center' },
+      { text: 'Actions', value: 'actions', sortable: false, divider: true, width: 180, align: 'center' }
     ],
     tasks: [],
     dateString: toDateString(new Date()),
@@ -293,7 +290,11 @@ export default {
       return nextStartTime.getTime()
     },
 
-    addTask () {
+    addTask (executable) {
+      if (!executable) {
+        // 日本語変換中は無視
+        return
+      }
       if (!this.taskName || this.taskName === '') {
         return
       }
@@ -327,3 +328,11 @@ export default {
   }
 }
 </script>
+
+<style lang="scss" scoped>
+.main-height {
+  height: calc(100vh - 64px);
+  padding-bottom: 6px;
+  overflow: auto;
+}
+</style>
