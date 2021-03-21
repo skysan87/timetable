@@ -4,8 +4,10 @@
       <v-data-table
         :headers="headers"
         :items="tasks"
-        sort-by="start"
+        :sort-by="['start', 'end']"
         hide-default-footer
+        fixed-header
+        disable-pagination
       >
         <template #top>
           <v-toolbar
@@ -165,6 +167,12 @@ export default {
     ]
   }),
 
+  computed: {
+    orderedTasks () {
+      return orderBy(this.tasks, ['start', 'end'])
+    }
+  },
+
   created () {
     this.initialize()
   },
@@ -181,14 +189,14 @@ export default {
     },
 
     firstIndex (task) {
-      const orderedIntex = orderBy(this.tasks, 'start')
+      const orderedIntex = this.orderedTasks
         .findIndex(r => r.id === task.id)
 
       return orderedIntex === 0
     },
 
     lastIndex (task) {
-      const orderedIntex = orderBy(this.tasks, 'start')
+      const orderedIntex = this.orderedTasks
         .findIndex(r => r.id === task.id)
 
       return orderedIntex === (this.tasks.length - 1)
@@ -197,7 +205,7 @@ export default {
     changeOrder (task, offset) {
       const targetItem = new Task(task.id, task)
 
-      const ordered = orderBy(this.tasks, 'start')
+      const ordered = this.orderedTasks
       const index = ordered.findIndex(r => r.id === task.id)
       // 次の時間の予定を取得
       const nextTmp = ordered[index + offset]
@@ -275,7 +283,7 @@ export default {
 
       // レコードがあれば最後のイベントを参照
       const lastTask = (this.tasks.length > 0)
-        ? orderBy(this.tasks, 'start')[this.tasks.length - 1]
+        ? this.orderedTasks[this.tasks.length - 1]
         : null
 
       const time = lastTask !== null ? new Date(lastTask.end) : new Date()
