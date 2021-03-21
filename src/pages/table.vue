@@ -245,7 +245,7 @@ export default {
       const taskDate = new Date(this.dateString)
       taskDate.setHours(time.getHours(), time.getMinutes())
 
-      const defaultTime = this.roundTime(taskDate.getTime()) + defaultPeriod
+      const defaultTime = this.roundTime(taskDate.getTime(), false) + defaultPeriod
 
       const task = new Task('', {
         event_date: this.dateString,
@@ -276,21 +276,29 @@ export default {
         })
     },
 
-    addTask () {
-      if (!this.taskName || this.taskName === '') {
-        return
-      }
-
+    calcStartTime () {
       // レコードがあれば最後のイベントを参照
       const lastTask = (this.tasks.length > 0)
         ? this.orderedTasks[this.tasks.length - 1]
         : null
 
-      const time = lastTask !== null ? new Date(lastTask.end) : new Date()
-      const taskDate = new Date(this.dateString)
-      taskDate.setHours(time.getHours(), time.getMinutes())
+      let nextStartTime
+      if (lastTask !== null) {
+        nextStartTime = new Date(lastTask.end)
+      } else {
+        const now = new Date()
+        nextStartTime = new Date(this.roundTime(now.getTime(), false))
+      }
 
-      const startTime = this.roundTime(taskDate.getTime())
+      return nextStartTime.getTime()
+    },
+
+    addTask () {
+      if (!this.taskName || this.taskName === '') {
+        return
+      }
+
+      const startTime = this.calcStartTime()
       const endTime = startTime + (this.taskDuration * 60 * 1000)
 
       // 登録できる上限
