@@ -59,13 +59,13 @@
                 </template>
                 <v-list dense>
                   <v-list-item-group>
-                    <v-list-item>
-                      <v-list-item-title @click="addTask(true)">
+                    <v-list-item @click="addTask(true)">
+                      <v-list-item-title>
                         Add to the end
                       </v-list-item-title>
                     </v-list-item>
-                    <v-list-item>
-                      <v-list-item-title @click="showDialog">
+                    <v-list-item @click="showDialog">
+                      <v-list-item-title>
                         Edit time
                       </v-list-item-title>
                     </v-list-item>
