@@ -136,7 +136,7 @@
 import { Task } from '@/model/Task'
 import { TaskDao } from '@/dao/TaskDao'
 import { toDateString, toTimeString } from '@/util/TimeUtil'
-import orderBy from 'lodash.orderBy'
+import orderBy from 'lodash/orderBy'
 import InputForm from '@/components/InputForm'
 
 const dao = new TaskDao()
