@@ -40,11 +40,39 @@
           <v-spacer />
 
           <v-switch v-model="editMode" label="Add/Move Event" class="pr-4" hide-details />
-          <v-switch v-model="visiblePrivate" class="pr-4" label="Show Private" hide-details @change="switchPrivate" />
 
-          <v-btn color="primary" @click="scrollToTime">
-            Now
-          </v-btn>
+          <v-menu offset-y>
+            <template #activator="{ on, attrs }">
+              <v-btn
+                class="ml-2"
+                color="primary"
+                large
+                v-bind="attrs"
+                v-on="on"
+              >
+                Menu
+              </v-btn>
+            </template>
+            <v-list flat>
+              <v-list-item-group>
+                <v-list-item @click="$router.push('table')">
+                  <v-list-item-title>
+                    Table Mode
+                  </v-list-item-title>
+                </v-list-item>
+                <v-list-item @click="scrollToTime">
+                  <v-list-item-title>
+                    Now
+                  </v-list-item-title>
+                </v-list-item>
+                <v-list-item @click="switchPrivate">
+                  <v-list-item-title>
+                    {{ visiblePrivate ? 'Hide Private' : 'Show Private' }}
+                  </v-list-item-title>
+                </v-list-item>
+              </v-list-item-group>
+            </v-list>
+          </v-menu>
         </v-toolbar>
       </v-sheet>
       <v-sheet class="main-hight">
@@ -381,6 +409,8 @@ export default {
         })
     },
     switchPrivate () {
+      this.visiblePrivate = !this.visiblePrivate
+
       if (!this.visiblePrivate) {
         this.events = this.events.filter(e => e.private === false)
       } else {
