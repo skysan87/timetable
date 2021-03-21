@@ -43,15 +43,35 @@
               />
             </v-col>
             <v-col cols="1">
-              <v-btn
-                class="ml-2"
-                color="primary"
-                large
-                hide-details
-                @click="addTask(true)"
+              <v-menu
+                offset-y
               >
-                Add
-              </v-btn>
+                <template #activator="{ on, attrs }">
+                  <v-btn
+                    class="ml-2"
+                    color="primary"
+                    large
+                    v-bind="attrs"
+                    v-on="on"
+                  >
+                    Menu
+                  </v-btn>
+                </template>
+                <v-list dense>
+                  <v-list-item-group>
+                    <v-list-item>
+                      <v-list-item-title @click="addTask(true)">
+                        Add to the end
+                      </v-list-item-title>
+                    </v-list-item>
+                    <v-list-item>
+                      <v-list-item-title @click="showDialog">
+                        Edit time
+                      </v-list-item-title>
+                    </v-list-item>
+                  </v-list-item-group>
+                </v-list>
+              </v-menu>
             </v-col>
           </v-row>
         </v-toolbar>
@@ -101,12 +121,6 @@
             >
               mdi-pencil
             </v-icon>
-            <v-icon
-              small
-              @click="deleteTask(item.id)"
-            >
-              mdi-delete
-            </v-icon>
           </template>
           <template #no-data>
             No Task
@@ -119,9 +133,6 @@
 </template>
 
 <script>
-// TODO:
-// - Actionsに下に追加ボタン
-
 import { Task } from '@/model/Task'
 import { TaskDao } from '@/dao/TaskDao'
 import { toDateString, toTimeString } from '@/util/TimeUtil'
@@ -129,7 +140,6 @@ import orderBy from 'lodash.orderBy'
 import InputForm from '@/components/InputForm'
 
 const dao = new TaskDao()
-const defaultPeriod = (30 * 60 * 1000) // 30 minutes
 
 export default {
   components: {
@@ -150,7 +160,7 @@ export default {
       { text: 'Title', value: 'name', sortable: false, divider: true, align: 'start' },
       { text: 'Start', value: 'start_time', sortable: false, divider: true, width: 100, align: 'center' },
       { text: 'End', value: 'end_time', sortable: false, divider: true, width: 100, align: 'center' },
-      { text: 'Actions', value: 'actions', sortable: false, divider: true, width: 180, align: 'center' }
+      { text: 'Actions', value: 'actions', sortable: false, divider: true, width: 150, align: 'center' }
     ],
     tasks: [],
     dateString: toDateString(new Date()),
@@ -242,28 +252,44 @@ export default {
       const taskDate = new Date(this.dateString)
       taskDate.setHours(time.getHours(), time.getMinutes())
 
-      const defaultTime = this.roundTime(taskDate.getTime(), false) + defaultPeriod
+      const defaultTime = this.roundTime(taskDate.getTime(), false)
 
       const task = new Task('', {
+        name: this.taskName,
         event_date: this.dateString,
         start: defaultTime,
-        end: defaultTime + defaultPeriod,
+        end: defaultTime + (this.taskDuration * 60 * 1000),
         timed: true
       })
       this.$refs.detail.open(task)
     },
 
     updateTask (task) {
-      dao.update(task)
-        .then(() => {
-          const index = this.tasks.findIndex(v => v.id === task.id)
-          if (index >= 0) {
-            Object.assign(this.tasks[index], task)
-          }
-        })
+      if (task.id === '') {
+        // create
+        task.id = Date.now()
+        dao.add(task)
+          .then(() => {
+            this.tasks.push(task)
+            this.taskName = ''
+          })
+      } else {
+        // update
+        dao.update(task)
+          .then(() => {
+            const index = this.tasks.findIndex(v => v.id === task.id)
+            if (index >= 0) {
+              Object.assign(this.tasks[index], task)
+            }
+          })
+      }
     },
 
     deleteTask (id) {
+      if (!id || id === '') {
+        return
+      }
+
       dao.delete(id)
         .then(() => {
           const index = this.tasks.findIndex(v => v.id === id)
