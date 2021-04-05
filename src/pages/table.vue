@@ -223,11 +223,19 @@ export default {
       const nextDuration = nextItem.end - nextItem.start
 
       // 開始時間を入れ替える
-      targetItem.start = nextItem.start
-      targetItem.end = nextItem.start + targetDuration
+      if (offset < 0) {
+        targetItem.start = nextItem.start
+        targetItem.end = nextItem.start + targetDuration
 
-      nextItem.start = task.start
-      nextItem.end = task.start + nextDuration
+        nextItem.start = targetItem.end
+        nextItem.end = targetItem.end + nextDuration
+      } else {
+        nextItem.start = targetItem.start
+        nextItem.end = targetItem.start + nextDuration
+
+        targetItem.start = nextItem.end
+        targetItem.end = nextItem.end + targetDuration
+      }
 
       this.updateTask(targetItem)
 
