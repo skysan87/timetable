@@ -76,12 +76,33 @@ export class TaskDao {
       try {
         const tx = db.transaction('event', 'readwrite')
         const store = tx.objectStore('event')
-        const req = store.put(task.getData()) // upsert
+        const req = store.put(task.getData())
         req.onsuccess = (e) => {
           resolve(null)
         }
         req.onerror = (e) => {
           reject(new Error(e.message))
+        }
+      } catch (error) {
+        reject(error)
+      }
+    })
+  }
+
+  updateAll (tasks) {
+    return new Promise((resolve, reject) => {
+      const db = DB.getInstance()
+      try {
+        const tx = db.transaction('event', 'readwrite')
+        const store = tx.objectStore('event')
+        tasks.forEach((task) => {
+          store.put(task.getData())
+        })
+        tx.onerror = () => {
+          reject(new Error(tx.error))
+        }
+        tx.oncomplete = (e) => {
+          resolve(null)
         }
       } catch (error) {
         reject(error)

@@ -55,6 +55,11 @@
             </template>
             <v-list flat>
               <v-list-item-group>
+                <v-list-item @click="$router.push('matching')">
+                  <v-list-item-title>
+                    Matching Mode
+                  </v-list-item-title>
+                </v-list-item>
                 <v-list-item @click="$router.push('table')">
                   <v-list-item-title>
                     Table Mode
