@@ -67,6 +67,7 @@
         <div class="mb-2 text-h5 flex-grow-0 flex-shrink-0 d-flex justify-space-between">
           <div>
             Timetable
+            <edit-timetable-dialog :range="range" @update="updateRange" />
           </div>
 
           <v-btn color="primary" depressed @click="autoMatching">
@@ -119,12 +120,16 @@
 import { Task } from '@/model/Task'
 import { TaskDao } from '@/dao/TaskDao'
 import { toDateString, toTimeString } from '@/util/TimeUtil'
+import EditTimetableDialog from '@/components/EditTimetableDialog'
 
 const dao = new TaskDao()
 
 const TASK_EMPTY_KEY = 'empty'
 
 export default {
+  components: {
+    EditTimetableDialog
+  },
   data () {
     return {
       targetTask: '',
@@ -132,7 +137,8 @@ export default {
       tasks: [],
       timetable: [],
       taskName: '',
-      dateString: toDateString(new Date())
+      dateString: toDateString(new Date()),
+      range: { start: '09:00', end: '18:00' }
     }
   },
   computed: {
@@ -329,6 +335,10 @@ export default {
         }
       })
       await dao.updateAll(updateTasks)
+    },
+    updateRange (val) {
+      this.range = val
+      // TODO: タイムテーブル更新処理
     },
     /**
      * タイムテーブルデータの作成
