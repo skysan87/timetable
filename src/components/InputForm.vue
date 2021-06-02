@@ -100,28 +100,34 @@
               </v-menu>
             </v-col>
           </v-row>
-          <v-btn
-            class="mr-4 my-1"
-            @click="clear"
-          >
-            Close
-          </v-btn>
-          <v-btn
-            color="success"
-            class="mr-4 my-1"
-            @click="update"
-          >
-            Update
-          </v-btn>
-          <v-btn
-            class="mr-4 my-1"
-            color="error"
-            @click="deleteEvent"
-          >
-            Delete
-          </v-btn>
         </v-form>
       </v-card-text>
+      <v-card-actions>
+        <v-spacer />
+        <v-btn
+          class="mr-4 my-1"
+          elevation="0"
+          @click="clear"
+        >
+          Close
+        </v-btn>
+        <v-btn
+          color="success"
+          class="mr-4 my-1"
+          elevation="0"
+          @click="update"
+        >
+          Update
+        </v-btn>
+        <v-btn
+          class="mr-4 my-1"
+          color="error"
+          elevation="0"
+          @click="deleteEvent"
+        >
+          Delete
+        </v-btn>
+      </v-card-actions>
     </v-card>
   </v-dialog>
 </template>
