@@ -48,9 +48,8 @@ export function converToDate (datetime, clock) {
   let hour = parseInt(clocks[0])
   if (hour < 0) {
     hour = 0
-  } else if (hour > 23) {
-    hour = 23
   }
+  // NOTE: 24:00の場合、翌日になる
 
   let minute = parseInt(clocks[1])
   if (minute < 0) {

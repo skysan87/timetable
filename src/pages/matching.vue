@@ -138,7 +138,7 @@ export default {
       timetable: [],
       taskName: '',
       dateString: toDateString(new Date()),
-      range: { start: '00:00', end: '23:00' }
+      range: { start: '00:00', end: '24:00' }
     }
   },
   computed: {
@@ -362,7 +362,12 @@ export default {
     createTimetable () {
       const now = new Date()
       const startTime = converToDate(now, this.range.start).getHours()
-      const endTime = converToDate(now, this.range.end).getHours()
+
+      const tmpEndDate = converToDate(now, this.range.end)
+      const endTime = now.getDate() === tmpEndDate.getDate()
+        ? tmpEndDate.getHours()
+        : 24
+
       const blockMinutes = 30
       const blockCount = (endTime - startTime) * (60 / blockMinutes)
 
