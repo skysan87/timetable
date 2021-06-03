@@ -50,7 +50,7 @@ export default {
 
   props: {
     range: {
-      type: Object,
+      type: Object, // ex) { start: '09:00', end: '18:00' }
       default: () => ({ start: null, end: null })
     }
   },

@@ -134,30 +134,7 @@
 
 <script>
 import { Task } from '@/model/Task'
-import { to2Digit } from '@/util/TimeUtil'
-
-/**
- * UTCミリ秒を「HH:mm」形式に変更
- * @param {Number} datetime UTCミリ秒
- * @returns {String}
- */
-const convertToClock = (datetime) => {
-  const date = new Date(datetime)
-  return `${to2Digit(date.getHours())}:${to2Digit(date.getMinutes())}`
-}
-
-/**
- * Date型に変換
- * @param {Number} datetime UTCミリ秒
- * @param {String} clock HH:mm
- * @return {Date}
- */
-const converToDate = (datetime, clock) => {
-  const clocks = clock.split(':')
-  const date = new Date(datetime)
-  date.setHours(parseInt(clocks[0]), parseInt(clocks[1]), 0, 0)
-  return date
-}
+import { convertToClock, converToDate } from '@/util/TimeUtil'
 
 export default {
   name: 'InputForm',

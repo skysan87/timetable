@@ -119,7 +119,7 @@
 <script>
 import { Task } from '@/model/Task'
 import { TaskDao } from '@/dao/TaskDao'
-import { toDateString, toTimeString } from '@/util/TimeUtil'
+import { toDateString, toTimeString, converToDate } from '@/util/TimeUtil'
 import EditTimetableDialog from '@/components/EditTimetableDialog'
 
 const dao = new TaskDao()
@@ -138,7 +138,7 @@ export default {
       timetable: [],
       taskName: '',
       dateString: toDateString(new Date()),
-      range: { start: '09:00', end: '18:00' }
+      range: { start: '00:00', end: '23:00' }
     }
   },
   computed: {
@@ -162,9 +162,7 @@ export default {
       this.tasks.push(...pendingTask)
 
       // 登録済のタスクをタイムテーブルに表示
-      this.timetable.forEach((time) => {
-        time.task = this.tasks.find(task => task.start === time.id) ?? null
-      })
+      this.showScheduledTask()
     },
     /**
      * ドラッグ終了イベント
@@ -336,18 +334,39 @@ export default {
       })
       await dao.updateAll(updateTasks)
     },
+    /**
+     * 表示する時間の設定を変更
+     */
     updateRange (val) {
+      if (!val) {
+        return
+      }
+
       this.range = val
-      // TODO: タイムテーブル更新処理
+
+      this.createTimetable()
+
+      this.showScheduledTask()
+    },
+    /**
+     * 登録済のタスクをタイムテーブルに表示
+     */
+    showScheduledTask () {
+      this.timetable.forEach((time) => {
+        time.task = this.tasks.find(task => task.start === time.id) ?? null
+      })
     },
     /**
      * タイムテーブルデータの作成
      */
     createTimetable () {
-      const startTime = 9
-      const endTime = 18
+      const now = new Date()
+      const startTime = converToDate(now, this.range.start).getHours()
+      const endTime = converToDate(now, this.range.end).getHours()
       const blockMinutes = 30
       const blockCount = (endTime - startTime) * (60 / blockMinutes)
+
+      this.timetable = []
 
       for (let i = 0; i < blockCount; i++) {
         const hour = startTime + Math.floor((i * blockMinutes) / 60)
