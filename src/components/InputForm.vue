@@ -100,58 +100,41 @@
               </v-menu>
             </v-col>
           </v-row>
-          <v-btn
-            class="mr-4 my-1"
-            @click="clear"
-          >
-            Close
-          </v-btn>
-          <v-btn
-            color="success"
-            class="mr-4 my-1"
-            @click="update"
-          >
-            Update
-          </v-btn>
-          <v-btn
-            class="mr-4 my-1"
-            color="error"
-            @click="deleteEvent"
-          >
-            Delete
-          </v-btn>
         </v-form>
       </v-card-text>
+      <v-card-actions>
+        <v-spacer />
+        <v-btn
+          class="mr-4 my-1"
+          elevation="0"
+          @click="clear"
+        >
+          Close
+        </v-btn>
+        <v-btn
+          color="success"
+          class="mr-4 my-1"
+          elevation="0"
+          @click="update"
+        >
+          Update
+        </v-btn>
+        <v-btn
+          class="mr-4 my-1"
+          color="error"
+          elevation="0"
+          @click="deleteEvent"
+        >
+          Delete
+        </v-btn>
+      </v-card-actions>
     </v-card>
   </v-dialog>
 </template>
 
 <script>
 import { Task } from '@/model/Task'
-import { to2Digit } from '@/util/TimeUtil'
-
-/**
- * UTCミリ秒を「HH:mm」形式に変更
- * @param {Number} datetime UTCミリ秒
- * @returns {String}
- */
-const convertToClock = (datetime) => {
-  const date = new Date(datetime)
-  return `${to2Digit(date.getHours())}:${to2Digit(date.getMinutes())}`
-}
-
-/**
- * Date型に変換
- * @param {Number} datetime UTCミリ秒
- * @param {String} clock HH:mm
- * @return {Date}
- */
-const converToDate = (datetime, clock) => {
-  const clocks = clock.split(':')
-  const date = new Date(datetime)
-  date.setHours(parseInt(clocks[0]), parseInt(clocks[1]), 0, 0)
-  return date
-}
+import { convertToClock, converToDate } from '@/util/TimeUtil'
 
 export default {
   name: 'InputForm',

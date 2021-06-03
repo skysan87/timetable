@@ -67,6 +67,7 @@
         <div class="mb-2 text-h5 flex-grow-0 flex-shrink-0 d-flex justify-space-between">
           <div>
             Timetable
+            <edit-timetable-dialog :range="range" @update="updateRange" />
           </div>
 
           <v-btn color="primary" depressed @click="autoMatching">
@@ -118,13 +119,17 @@
 <script>
 import { Task } from '@/model/Task'
 import { TaskDao } from '@/dao/TaskDao'
-import { toDateString, toTimeString } from '@/util/TimeUtil'
+import { toDateString, toTimeString, converToDate } from '@/util/TimeUtil'
+import EditTimetableDialog from '@/components/EditTimetableDialog'
 
 const dao = new TaskDao()
 
 const TASK_EMPTY_KEY = 'empty'
 
 export default {
+  components: {
+    EditTimetableDialog
+  },
   data () {
     return {
       targetTask: '',
@@ -132,7 +137,8 @@ export default {
       tasks: [],
       timetable: [],
       taskName: '',
-      dateString: toDateString(new Date())
+      dateString: toDateString(new Date()),
+      range: { start: '00:00', end: '23:00' }
     }
   },
   computed: {
@@ -156,9 +162,7 @@ export default {
       this.tasks.push(...pendingTask)
 
       // 登録済のタスクをタイムテーブルに表示
-      this.timetable.forEach((time) => {
-        time.task = this.tasks.find(task => task.start === time.id) ?? null
-      })
+      this.showScheduledTask()
     },
     /**
      * ドラッグ終了イベント
@@ -331,13 +335,38 @@ export default {
       await dao.updateAll(updateTasks)
     },
     /**
+     * 表示する時間の設定を変更
+     */
+    updateRange (val) {
+      if (!val) {
+        return
+      }
+
+      this.range = val
+
+      this.createTimetable()
+
+      this.showScheduledTask()
+    },
+    /**
+     * 登録済のタスクをタイムテーブルに表示
+     */
+    showScheduledTask () {
+      this.timetable.forEach((time) => {
+        time.task = this.tasks.find(task => task.start === time.id) ?? null
+      })
+    },
+    /**
      * タイムテーブルデータの作成
      */
     createTimetable () {
-      const startTime = 9
-      const endTime = 18
+      const now = new Date()
+      const startTime = converToDate(now, this.range.start).getHours()
+      const endTime = converToDate(now, this.range.end).getHours()
       const blockMinutes = 30
       const blockCount = (endTime - startTime) * (60 / blockMinutes)
+
+      this.timetable = []
 
       for (let i = 0; i < blockCount; i++) {
         const hour = startTime + Math.floor((i * blockMinutes) / 60)
