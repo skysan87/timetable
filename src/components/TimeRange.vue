@@ -31,6 +31,7 @@
       <div class="d-flex justify-space-between mb-0" style="height: 26px;">
         <span>End</span>
         <v-checkbox
+          v-if="show24h"
           v-model="enable24h"
           class="pa-0 ma-0"
           label="24:00"
@@ -98,6 +99,10 @@ export default {
     minuteSpan: {
       type: Number,
       default: 15
+    },
+    show24h: {
+      type: Boolean,
+      default: true
     }
   },
 
