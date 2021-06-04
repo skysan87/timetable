@@ -360,35 +360,28 @@ export default {
      * タイムテーブルデータの作成
      */
     createTimetable () {
-      const now = new Date()
-      const startTime = converToDate(now, this.range.start).getHours()
-
-      const tmpEndDate = converToDate(now, this.range.end)
-      const endTime = now.getDate() === tmpEndDate.getDate()
-        ? tmpEndDate.getHours()
-        : 24
+      const now = Date.parse(this.dateString)
+      const startTime = converToDate(now, this.range.start)
+      const endTime = converToDate(now, this.range.end)
 
       const blockMinutes = 30
-      const blockCount = (endTime - startTime) * (60 / blockMinutes)
+      const blockCount = (endTime - startTime) / (60 * 1000 * blockMinutes)
 
       this.timetable = []
 
       for (let i = 0; i < blockCount; i++) {
-        const hour = startTime + Math.floor((i * blockMinutes) / 60)
-        const minute = (i * blockMinutes) % 60
-
-        const today = new Date()
-        today.setHours(hour, minute, 0, 0)
-        const timeNum = today.getTime()
+        const timeNum = startTime.getTime()
 
         this.timetable.push({
           id: timeNum,
-          label: `${toTimeString(today)}`,
+          label: `${toTimeString(startTime)}`,
           start: timeNum,
           end: timeNum + (blockMinutes * 60 * 1000),
           isEnter: false,
           task: null
         })
+
+        startTime.setMinutes(startTime.getMinutes() + blockMinutes)
       }
     }
   }
