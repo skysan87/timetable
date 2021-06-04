@@ -63,6 +63,30 @@
 </template>
 
 <script>
+
+/**
+ * 分の単位の範囲を取得
+ * @param {Number} span 15, 30
+ */
+const getMinutesRange = (span) => {
+  const step = 60 / span
+  return Array.from({ length: step }, (v, k) => k * span)
+}
+
+/**
+ * 分単位の時間差を計算
+ * @param {Number} startHour 開始:時
+ * @param {Number} startMinute 開始:分
+ * @param {Number} endHour 終了:時
+ * @param {Number} endMinute 終了:分
+ */
+const timediffMinutes = (startHour, startMinute, endHour, endMinute) => {
+  const start = new Date(2020, 1, 1, startHour, startMinute, 0, 0)
+  const end = new Date(2020, 1, 1, endHour, endMinute, 0, 0)
+
+  return (end - start) / (1000 * 60)
+}
+
 export default {
   name: 'TimeRange',
 
@@ -70,6 +94,10 @@ export default {
     range: {
       type: Object,
       default: () => ({ start: null, end: null })
+    },
+    minuteSpan: {
+      type: Number,
+      default: 15
     }
   },
 
@@ -120,40 +148,44 @@ export default {
     },
     startHRange: {
       get () {
-        const count = (this.endHour !== 24) ? this.endHour + 1 : this.endHour
-        return Array.from({ length: count }, (v, k) => k)
+        const sm = this.startMinute
+        const eh = this.endHour
+        const em = this.endMinute
+        return Array.from({ length: 24 }, (v, k) => k)
+          .filter((h) => {
+            return timediffMinutes(h, sm, eh, em) >= this.minuteSpan
+          })
       }
     },
     startMRange: {
       get () {
-        if (this.startHour === this.endHour) {
-          return Array.from({ length: 4 }, (v, k) => k * 15)
-            .filter(t => t < this.endMinute)
-        } else {
-          return Array.from({ length: 4 }, (v, k) => k * 15)
-        }
+        const sh = this.startHour
+        const eh = this.endHour
+        const em = this.endMinute
+        return getMinutesRange(this.minuteSpan).filter((m) => {
+          return timediffMinutes(sh, m, eh, em) >= this.minuteSpan
+        })
       }
     },
     endHRange: {
       get () {
-        // 差が1時間以内
-        if (this.endHour - this.startHour <= 1 && this.endMinute <= this.startMinute) {
-          return Array.from({ length: 24 }, (v, k) => k)
-            .filter(t => t > this.startHour)
-        } else {
-          return Array.from({ length: 24 }, (v, k) => k)
-            .filter(t => t >= this.startHour)
-        }
+        const sh = this.startHour
+        const sm = this.startMinute
+        const em = this.endMinute
+        return Array.from({ length: 24 }, (v, k) => k)
+          .filter((h) => {
+            return timediffMinutes(sh, sm, h, em) >= this.minuteSpan
+          })
       }
     },
     endMRange: {
       get () {
-        if (this.startHour === this.endHour) {
-          return Array.from({ length: 4 }, (v, k) => k * 15)
-            .filter(t => t > this.startMinute)
-        } else {
-          return Array.from({ length: 4 }, (v, k) => k * 15)
-        }
+        const sh = this.startHour
+        const sm = this.startMinute
+        const eh = this.endHour
+        return getMinutesRange(this.minuteSpan).filter((m) => {
+          return timediffMinutes(sh, sm, eh, m) >= this.minuteSpan
+        })
       }
     },
     enable24h: {
@@ -161,8 +193,9 @@ export default {
         return this.endHour === 24
       },
       set (val) {
-        const time = val ? '24:00' : '23:30'
-        this.$emit('update:range', { start: this.range.start, end: time })
+        const starttime = (!val && this.startHour === 23) ? '23:00' : this.range.start
+        const endtime = val ? '24:00' : `23:${this.minuteSpan}`
+        this.$emit('update:range', { start: starttime, end: endtime })
       }
     }
   }
