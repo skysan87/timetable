@@ -2,69 +2,62 @@
   <v-row>
     <!-- Start Time -->
     <v-col cols="6">
-      <v-menu
-        ref="startMenu"
-        v-model="startMenu"
-        :close-on-content-click="false"
-        :nudge-right="40"
-        :return-value.sync="start"
-        transition="scale-transition"
-        offset-y
-        max-width="290px"
-        min-width="290px"
-      >
-        <template #activator="{ on, attrs }">
-          <v-text-field
-            v-model="start"
-            label="Start"
-            prepend-icon="mdi-clock-time-four-outline"
-            readonly
-            v-bind="attrs"
-            v-on="on"
+      <div class="d-flex" style="height: 26px;">
+        <span>Start</span>
+      </div>
+      <v-row no-gutters>
+        <v-col cols="6">
+          <v-select
+            v-model="startHour"
+            :items="startHRange"
+            label="Hour"
+            hide-details
+            outlined
           />
-        </template>
-        <v-time-picker
-          v-if="startMenu"
-          v-model="start"
-          :allowed-minutes="[0, 15, 30, 45]"
-          :max="end"
-          full-width
-          @click:minute="saveStartTime(start)"
-        />
-      </v-menu>
+        </v-col>
+        <v-col cols="6">
+          <v-select
+            v-model="startMinute"
+            :items="startMRange"
+            label="Minute"
+            hide-details
+            outlined
+          />
+        </v-col>
+      </v-row>
     </v-col>
     <!-- End Time -->
     <v-col cols="6">
-      <v-menu
-        ref="endMenu"
-        v-model="endMenu"
-        :close-on-content-click="false"
-        :nudge-right="40"
-        :return-value.sync="end"
-        transition="scale-transition"
-        offset-y
-        max-width="290px"
-        min-width="290px"
-      >
-        <template #activator="{ on, attrs }">
-          <v-text-field
-            v-model="end"
-            label="End"
-            prepend-icon="mdi-clock-time-four-outline"
-            readonly
-            v-bind="attrs"
-            v-on="on"
-          />
-        </template>
-        <v-time-picker
-          v-if="endMenu"
-          v-model="end"
-          :allowed-minutes="[0, 15, 30, 45]"
-          :min="start"
-          full-width
-          @click:minute="saveEndTime(end)"
+      <div class="d-flex justify-space-between mb-0" style="height: 26px;">
+        <span>End</span>
+        <v-checkbox
+          v-model="enable24h"
+          class="pa-0 ma-0"
+          label="24:00"
+          dense
+          hide-details
         />
-      </v-menu>
+      </div>
+      <v-row v-show="!enable24h" no-gutters>
+        <v-col cols="6">
+          <v-select
+            v-model="endHour"
+            :items="endHRange"
+            label="Hour"
+            hide-details
+            outlined
+          />
+        </v-col>
+        <v-col cols="6">
+          <v-select
+            v-model="endMinute"
+            :items="endMRange"
+            label="Minute"
+            hide-details
+            outlined
+          />
+        </v-col>
+      </v-row>
     </v-col>
   </v-row>
 </template>
@@ -80,35 +73,97 @@ export default {
     }
   },
 
-  data: () => ({
-    startMenu: false,
-    endMenu: false
-  }),
-
   computed: {
-    start: {
+    startHour: {
       get () {
-        return this.range.start
+        return this.range.start !== null
+          ? parseInt(this.range.start.split(':')[0])
+          : 0
       },
       set (val) {
-        this.$emit('update:range', { start: val, end: this.range.end })
+        const time = `${val}:${this.startMinute}`
+        this.$emit('update:range', { start: time, end: this.range.end })
       }
     },
-    end: {
+    startMinute: {
       get () {
-        return this.range.end
+        return this.range.start !== null
+          ? parseInt(this.range.start.split(':')[1])
+          : 0
       },
       set (val) {
-        this.$emit('update:range', { start: this.range.start, end: val })
+        const time = `${this.startHour}:${val}`
+        this.$emit('update:range', { start: time, end: this.range.end })
       }
-    }
-  },
-  methods: {
-    saveStartTime (val) {
-      this.$refs.startMenu.save(val)
     },
-    saveEndTime (val) {
-      this.$refs.endMenu.save(val)
+    endHour: {
+      get () {
+        return this.range.end !== null
+          ? parseInt(this.range.end.split(':')[0])
+          : 1
+      },
+      set (val) {
+        const time = `${val}:${this.endMinute}`
+        this.$emit('update:range', { start: this.range.start, end: time })
+      }
+    },
+    endMinute: {
+      get () {
+        return this.range.end !== null
+          ? parseInt(this.range.end.split(':')[1])
+          : 0
+      },
+      set (val) {
+        const time = `${this.endHour}:${val}`
+        this.$emit('update:range', { start: this.range.start, end: time })
+      }
+    },
+    startHRange: {
+      get () {
+        const count = (this.endHour !== 24) ? this.endHour + 1 : this.endHour
+        return Array.from({ length: count }, (v, k) => k)
+      }
+    },
+    startMRange: {
+      get () {
+        if (this.startHour === this.endHour) {
+          return Array.from({ length: 4 }, (v, k) => k * 15)
+            .filter(t => t < this.endMinute)
+        } else {
+          return Array.from({ length: 4 }, (v, k) => k * 15)
+        }
+      }
+    },
+    endHRange: {
+      get () {
+        // 差が1時間以内
+        if (this.endHour - this.startHour <= 1 && this.endMinute <= this.startMinute) {
+          return Array.from({ length: 24 }, (v, k) => k)
+            .filter(t => t > this.startHour)
+        } else {
+          return Array.from({ length: 24 }, (v, k) => k)
+            .filter(t => t >= this.startHour)
+        }
+      }
+    },
+    endMRange: {
+      get () {
+        if (this.startHour === this.endHour) {
+          return Array.from({ length: 4 }, (v, k) => k * 15)
+            .filter(t => t > this.startMinute)
+        } else {
+          return Array.from({ length: 4 }, (v, k) => k * 15)
+        }
+      }
+    },
+    enable24h: {
+      get () {
+        return this.endHour === 24
+      },
+      set (val) {
+        const time = val ? '24:00' : '23:30'
+        this.$emit('update:range', { start: this.range.start, end: time })
+      }
     }
   }
 }
