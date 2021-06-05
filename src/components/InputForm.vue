@@ -31,7 +31,7 @@
               />
             </v-col>
           </v-row>
-          <time-range v-if="notEmptyType" :range.sync="tmpRange" :minute-span="15" :show24h="false" />
+          <time-range v-if="notEmptyType" :range.sync="tmpRange" :minute-span="15" :show24h="true" />
         </v-form>
       </v-card-text>
       <v-card-actions>
@@ -99,7 +99,7 @@ export default {
       this.isShown = true
       Object.assign(this.dummyEvent, event)
       this.tmpRange.start = convertToClock(this.dummyEvent.start)
-      this.tmpRange.end = convertToClock(this.dummyEvent.end)
+      this.tmpRange.end = convertToClock(this.dummyEvent.end, true) // 24:00表記に対応
     },
     update (event) {
       event.preventDefault()

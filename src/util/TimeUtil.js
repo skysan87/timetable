@@ -28,11 +28,13 @@ export function toTimeString (date) {
 /**
  * UTCミリ秒を「HH:mm」形式に変更
  * @param {Number} datetime UTCミリ秒
+ * @param {Boolean} over24h 24時以降の表記を有効にする(例: 24:30)
  * @returns {String}
  */
-export function convertToClock (datetime) {
+export function convertToClock (datetime, over24h = false) {
   const date = new Date(datetime)
-  return `${to2Digit(date.getHours())}:${to2Digit(date.getMinutes())}`
+  const offset = over24h ? 24 : 0
+  return `${to2Digit(date.getHours() + offset)}:${to2Digit(date.getMinutes())}`
 }
 
 /**
