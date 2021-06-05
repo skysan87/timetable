@@ -185,14 +185,12 @@ export default {
   },
 
   methods: {
-    initialize () {
+    async initialize () {
       this.tasks = []
 
       // NOTE: 当日のみ(定期的な予定は含まない)
-      dao.init(this.dateString)
-        .then((tasks) => {
-          this.tasks.push(...tasks)
-        })
+      const tasks = await dao.init(this.dateString)
+      this.tasks.push(...tasks)
     },
 
     firstIndex (task) {
@@ -272,39 +270,36 @@ export default {
       this.$refs.detail.open(task)
     },
 
-    updateTask (task) {
+    async updateTask (task) {
       if (task.id === '') {
         // create
         task.id = Date.now()
-        dao.add(task)
-          .then(() => {
-            this.tasks.push(task)
-            this.taskName = ''
-          })
+        await dao.add(task)
+
+        this.tasks.push(task)
+        this.taskName = ''
       } else {
         // update
-        dao.update(task)
-          .then(() => {
-            const index = this.tasks.findIndex(v => v.id === task.id)
-            if (index >= 0) {
-              Object.assign(this.tasks[index], task)
-            }
-          })
+        await dao.update(task)
+
+        const index = this.tasks.findIndex(v => v.id === task.id)
+        if (index >= 0) {
+          Object.assign(this.tasks[index], task)
+        }
       }
     },
 
-    deleteTask (id) {
+    async deleteTask (id) {
       if (!id || id === '') {
         return
       }
 
-      dao.delete(id)
-        .then(() => {
-          const index = this.tasks.findIndex(v => v.id === id)
-          if (index >= 0) {
-            this.tasks.splice(index, 1)
-          }
-        })
+      await dao.delete(id)
+
+      const index = this.tasks.findIndex(v => v.id === id)
+      if (index >= 0) {
+        this.tasks.splice(index, 1)
+      }
     },
 
     calcStartTime () {
@@ -324,7 +319,7 @@ export default {
       return nextStartTime.getTime()
     },
 
-    addTask (executable) {
+    async addTask (executable) {
       if (!executable) {
         // 日本語変換中は無視
         return
@@ -353,11 +348,10 @@ export default {
         timed: true
       })
 
-      dao.add(task)
-        .then(() => {
-          this.taskName = ''
-          this.tasks.push(task)
-        })
+      await dao.add(task)
+
+      this.taskName = ''
+      this.tasks.push(task)
     }
   }
 }

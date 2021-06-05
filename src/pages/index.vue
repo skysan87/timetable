@@ -192,7 +192,7 @@ export default {
         this.extendOriginal = null
       }
     },
-    addEvent (tms) {
+    async addEvent (tms) {
       if (!this.editMode) {
         return
       }
@@ -213,10 +213,8 @@ export default {
         task.timed = true
         this.createEvent = task
 
-        dao.add(task)
-          .then(() => {
-            this.events.push(task)
-          })
+        await dao.add(task)
+        this.events.push(task)
       }
     },
     /**
@@ -256,15 +254,15 @@ export default {
         this.createEvent.end = max
       }
     },
-    endDrag () {
+    async endDrag () {
       if (!this.editMode) {
         return
       }
 
       if (this.dragEvent && this.dragTime !== null) {
-        dao.update(this.dragEvent)
+        await dao.update(this.dragEvent)
       } else if (this.createEvent && this.createStart !== null) {
-        dao.update(this.createEvent)
+        await dao.update(this.createEvent)
       }
       this.dragTime = null
       this.dragEvent = null
@@ -324,41 +322,39 @@ export default {
       const date = time ? new Date(time) : new Date()
       return toDateString(date)
     },
-    updateEvent (event) {
+    async updateEvent (event) {
       if (event.id === '') {
         // create
         event.id = Date.now()
-        dao.add(event)
-          .then(() => {
-            if (!this.visiblePrivate && event.private) {
-              // do nothing
-            } else {
-              this.events.push(event)
-            }
-          })
+        await dao.add(event)
+
+        if (!this.visiblePrivate && event.private) {
+          // do nothing
+        } else {
+          this.events.push(event)
+        }
       } else {
         // update
-        dao.update(event)
-          .then(() => {
-            const index = this.events.findIndex(v => v.id === event.id)
-            if (index >= 0) {
-              Object.assign(this.events[index], event)
-            }
-            if (!this.visiblePrivate && event.private) {
-              this.events.splice(index, 1)
-            }
-          })
+        await dao.update(event)
+
+        const index = this.events.findIndex(v => v.id === event.id)
+        if (index >= 0) {
+          Object.assign(this.events[index], event)
+        }
+        if (!this.visiblePrivate && event.private) {
+          this.events.splice(index, 1)
+        }
       }
       this.closeDetail()
     },
-    deleteEvent (id) {
-      dao.delete(id)
-        .then(() => {
-          const index = this.events.findIndex(v => v.id === id)
-          if (index >= 0) {
-            this.events.splice(index, 1)
-          }
-        })
+    async deleteEvent (id) {
+      await dao.delete(id)
+
+      const index = this.events.findIndex(v => v.id === id)
+      if (index >= 0) {
+        this.events.splice(index, 1)
+      }
+
       this.closeDetail()
     },
     showDetail ({ nativeEvent, event }) {
@@ -385,33 +381,24 @@ export default {
       const b = (rgb >> 0) & 0xFF
       return `rgba(${r}, ${g}, ${b}, ${opacity})`
     },
-    initVisibleEvents () {
+    async initVisibleEvents () {
       this.events = []
       const dateString = this.focus === '' ? this.getDate() : this.focus
 
-      dao.init(dateString)
-        .then((events) => {
-          this.events.push(...events)
-        })
-        .then(dao.getFreqEvents)
-        .then((events) => {
-          const updatedEvents = events.map((e) => {
-            e.start = e.changeDate(dateString, e.start)
-            e.end = e.changeDate(dateString, e.end)
-            return e
-          })
-          this.events.push(...updatedEvents)
-        })
-        .then(() => {
-          if (!this.visiblePrivate) {
-            this.events = this.events.filter(e => e.private === this.visiblePrivate)
-          }
-        })
-        .then(() => {
-          if (!this.visiblePrivate) {
-            this.events = this.events.filter(e => e.private === this.visiblePrivate)
-          }
-        })
+      const events = await dao.init(dateString)
+      this.events.push(...events)
+
+      const freqEvents = await dao.getFreqEvents()
+      const updatedEvents = freqEvents.map((e) => {
+        e.start = e.changeDate(dateString, e.start)
+        e.end = e.changeDate(dateString, e.end)
+        return e
+      })
+      this.events.push(...updatedEvents)
+
+      if (!this.visiblePrivate) {
+        this.events = this.events.filter(e => e.private === this.visiblePrivate)
+      }
     },
     switchPrivate () {
       this.visiblePrivate = !this.visiblePrivate

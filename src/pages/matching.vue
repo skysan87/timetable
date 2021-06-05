@@ -337,6 +337,9 @@ export default {
       time.task = null
     },
     async autoMatching () {
+      if (!confirm('Do you want to enable auto-matching?')) {
+        return
+      }
       const pendingTasks = this.tasks.filter(task => task.event_date === Task.EMPTY_KEY)
 
       const updateTasks = []
