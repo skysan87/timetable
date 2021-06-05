@@ -31,7 +31,7 @@
               />
             </v-col>
           </v-row>
-          <time-range :range.sync="tmpRange" :minute-span="15" :show24h="false" />
+          <time-range v-if="notEmptyType" :range.sync="tmpRange" :minute-span="15" :show24h="false" />
         </v-form>
       </v-card-text>
       <v-card-actions>
@@ -86,6 +86,11 @@ export default {
       },
       set (value) {
         this.dummyEvent.type = value ? Task.TYPE_FREQUENT : Task.TYPE_EVENT
+      }
+    },
+    notEmptyType: {
+      get () {
+        return this.dummyEvent.event_date !== Task.EMPTY_KEY
       }
     }
   },
