@@ -49,8 +49,10 @@
             <div class="flex-grow-1 no-wrap" :title="task.name">
               {{ task.name }}
             </div>
-            <div @click="deleteTask(task.id)">
-              x
+            <div class="icon" @click="deleteTask(task.id)">
+              <v-icon small>
+                mdi-delete-outline
+              </v-icon>
             </div>
           </div>
           <div v-if="displayTasks.length == 0" class="ma-2 pa-2">
@@ -104,8 +106,10 @@
                 <div class="flex-grow-1 no-wrap" :title="time.task.name">
                   {{ time.task.name }}
                 </div>
-                <div @click="cancelSchedule(time.id, time.task)">
-                  x
+                <div class="icon" @click="cancelSchedule(time.id, time.task)">
+                  <v-icon small>
+                    mdi-cancel
+                  </v-icon>
                 </div>
               </div>
             </div>
@@ -390,6 +394,25 @@ export default {
 
 <style lang="scss" scoped>
 $border-color: map-get($light-blue, 'lighten-3');
+
+.icon {
+  height: 22px;
+  width: 22px;
+  border-radius: 50%;
+  background-color: transparent;
+  text-align: center;
+  vertical-align: middle;
+  transition: background-color 0.3s;
+  &:hover {
+    cursor: pointer;
+    background-color: rgba(0, 0, 0, 0.1);
+  }
+  & i {
+    display: inline-block;
+    width: 100%;
+    height: 100%;
+  }
+}
 
 .scheduled {
   width: 100%;
