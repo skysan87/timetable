@@ -49,8 +49,15 @@
             <div class="flex-grow-1 no-wrap" :title="task.name">
               {{ task.name }}
             </div>
-            <div @click="deleteTask(task.id)">
-              x
+            <div class="icon" @click="editTask(task)">
+              <v-icon small>
+                mdi-pencil
+              </v-icon>
+            </div>
+            <div class="icon" @click="deleteTask(task.id)">
+              <v-icon small>
+                mdi-delete-outline
+              </v-icon>
             </div>
           </div>
           <div v-if="displayTasks.length == 0" class="ma-2 pa-2">
@@ -104,8 +111,10 @@
                 <div class="flex-grow-1 no-wrap" :title="time.task.name">
                   {{ time.task.name }}
                 </div>
-                <div @click="cancelSchedule(time.id, time.task)">
-                  x
+                <div class="icon icon--white" @click="cancelSchedule(time.id, time.task)">
+                  <v-icon small color="white">
+                    mdi-cancel
+                  </v-icon>
                 </div>
               </div>
             </div>
@@ -113,6 +122,7 @@
         </div>
       </v-card>
     </main>
+    <input-form ref="detail" @update="updateTask" @delete="deleteTask" />
   </div>
 </template>
 
@@ -121,14 +131,14 @@ import { Task } from '@/model/Task'
 import { TaskDao } from '@/dao/TaskDao'
 import { toDateString, toTimeString, converToDate } from '@/util/TimeUtil'
 import EditTimetableDialog from '@/components/EditTimetableDialog'
+import InputForm from '@/components/InputForm'
 
 const dao = new TaskDao()
 
-const TASK_EMPTY_KEY = 'empty'
-
 export default {
   components: {
-    EditTimetableDialog
+    EditTimetableDialog,
+    InputForm
   },
   data () {
     return {
@@ -143,7 +153,7 @@ export default {
   },
   computed: {
     displayTasks () {
-      return this.tasks.filter(task => task.event_date === TASK_EMPTY_KEY)
+      return this.tasks.filter(task => task.event_date === Task.EMPTY_KEY)
     }
   },
   created () {
@@ -158,7 +168,7 @@ export default {
       const scheduledTask = await dao.init(this.dateString)
       this.tasks.push(...scheduledTask)
 
-      const pendingTask = await dao.init(TASK_EMPTY_KEY)
+      const pendingTask = await dao.init(Task.EMPTY_KEY)
       this.tasks.push(...pendingTask)
 
       // 登録済のタスクをタイムテーブルに表示
@@ -266,7 +276,7 @@ export default {
 
       const task = new Task(Date.now(), {
         name: this.taskName,
-        event_date: TASK_EMPTY_KEY,
+        event_date: Task.EMPTY_KEY,
         start: 0,
         end: 0,
         timed: true
@@ -275,6 +285,17 @@ export default {
       await dao.add(task)
       this.tasks.push(task)
       this.taskName = ''
+    },
+    editTask (task) {
+      this.$refs.detail.open(task)
+    },
+    async updateTask (task) {
+      await dao.update(task)
+
+      const index = this.tasks.findIndex(v => v.id === task.id)
+      if (index >= 0) {
+        Object.assign(this.tasks[index], task)
+      }
     },
     /**
      * 未設定のタスクを削除
@@ -299,7 +320,7 @@ export default {
       if (!task) {
         return
       }
-      task.event_date = TASK_EMPTY_KEY
+      task.event_date = Task.EMPTY_KEY
       task.start = 0
       task.end = 0
       await dao.update(task)
@@ -316,7 +337,7 @@ export default {
       time.task = null
     },
     async autoMatching () {
-      const pendingTasks = this.tasks.filter(task => task.event_date === TASK_EMPTY_KEY)
+      const pendingTasks = this.tasks.filter(task => task.event_date === Task.EMPTY_KEY)
 
       const updateTasks = []
       this.timetable.forEach((time) => {
@@ -360,35 +381,28 @@ export default {
      * タイムテーブルデータの作成
      */
     createTimetable () {
-      const now = new Date()
-      const startTime = converToDate(now, this.range.start).getHours()
-
-      const tmpEndDate = converToDate(now, this.range.end)
-      const endTime = now.getDate() === tmpEndDate.getDate()
-        ? tmpEndDate.getHours()
-        : 24
+      const now = Date.parse(this.dateString)
+      const startTime = converToDate(now, this.range.start)
+      const endTime = converToDate(now, this.range.end)
 
       const blockMinutes = 30
-      const blockCount = (endTime - startTime) * (60 / blockMinutes)
+      const blockCount = (endTime - startTime) / (60 * 1000 * blockMinutes)
 
       this.timetable = []
 
       for (let i = 0; i < blockCount; i++) {
-        const hour = startTime + Math.floor((i * blockMinutes) / 60)
-        const minute = (i * blockMinutes) % 60
-
-        const today = new Date()
-        today.setHours(hour, minute, 0, 0)
-        const timeNum = today.getTime()
+        const timeNum = startTime.getTime()
 
         this.timetable.push({
           id: timeNum,
-          label: `${toTimeString(today)}`,
+          label: `${toTimeString(startTime)}`,
           start: timeNum,
           end: timeNum + (blockMinutes * 60 * 1000),
           isEnter: false,
           task: null
         })
+
+        startTime.setMinutes(startTime.getMinutes() + blockMinutes)
       }
     }
   }
@@ -397,6 +411,29 @@ export default {
 
 <style lang="scss" scoped>
 $border-color: map-get($light-blue, 'lighten-3');
+
+.icon {
+  height: 22px;
+  width: 22px;
+  border-radius: 50%;
+  background-color: transparent;
+  text-align: center;
+  vertical-align: middle;
+  transition: background-color 0.3s;
+  &:hover {
+    cursor: pointer;
+    background-color: rgba(0, 0, 0, 0.1);
+  }
+  &--white:hover {
+    cursor: pointer;
+    background-color: rgba(255, 255, 255, 0.3);
+  }
+  & i {
+    display: inline-block;
+    width: 100%;
+    height: 100%;
+  }
+}
 
 .scheduled {
   width: 100%;

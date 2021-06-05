@@ -21,7 +21,7 @@
       </v-card-title>
       <v-card-text>
         <v-container>
-          <time-range :range.sync="tmpRange" />
+          <time-range :range.sync="tmpRange" :minute-span="30" />
         </v-container>
         <strong class="red--text">{{ errorMsg }}</strong>
       </v-card-text>

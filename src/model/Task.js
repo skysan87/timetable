@@ -1,6 +1,7 @@
 export class Task {
   static TYPE_EVENT = 'event'
   static TYPE_FREQUENT = 'frequent'
+  static EMPTY_KEY = 'empty'
 
   constructor (id, params) {
     this.id = id
